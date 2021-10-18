@@ -6,7 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drawing App</title>
 </head>
-<body>
-    
+<body style="margin: 0; padding: 0;">
+    <canvas id="ctx" width="100vw" height="100vh">
+
+    </canvas>
+
+    <script>
+        const c = document.getElementById('ctx');
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+        const CTX = c.getContext('2d');
+
+        document.addEventListener('mousedown', (e_down) => {
+            let x = e_down.pageX;
+            let y = e_down.pageY;
+            const moveListener = (e_move) => {
+                CTX.beginPath();
+                CTX.moveTo(x, y);
+                CTX.lineTo(e_move.pageX, e_move.pageY);
+                CTX.stroke();
+                x = e_move.pageX;
+                y = e_move.pageY;
+            };
+            document.addEventListener('mousemove', moveListener)
+            document.addEventListener('mouseup', (e_up) => {
+                document.removeEventListener('mousemove', moveListener);
+            })
+        })
+    </script>
 </body>
 </html>

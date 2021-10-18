@@ -6,12 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drawing App</title>
 </head>
-<body style="margin: 0; padding: 0;">
+<body id="body" style="margin: 0; padding: 0;">
     <canvas id="ctx" width="100vw" height="100vh">
 
     </canvas>
 
     <script>
+        const cur = document.createElement("img");
+        cur.setAttribute('src', './cursor.png')
+        cur.style.position = "absolute";
+        cur.height = "30";
+        cur.weight = "30";
+        cur.style.top = "0";
+        cur.setAttribute("type", "img/png")
+
+        const body = document.getElementById('body');
+
+        body.appendChild(cur);
+
+
         let socket = new WebSocket("wss://66ee-79-246-148-139.ngrok.io");
         const TKN = Math.floor(Math.random() * 1000000);
 
@@ -20,12 +33,17 @@
         console.log("Sending to server");
         };
 
-        socket.onmessage = function(event) {
+        socket.onmessage = (event) => {
             let obj = JSON.parse(event.data);
             let arr = obj.data;
-            // console.log(arr);
+
             if(arr[4] !== TKN) {
-                draw(arr[0], arr[1], arr[2], arr[3]);
+                cur.style.left = arr[0]+"px";
+                cur.style.top = arr[1]+"px";
+                
+                if(arr[5] === true) {
+                  draw(arr[0], arr[1], arr[2], arr[3]);
+                }
             }
             console.log(`[message] Data received from server: ${event.data}`);
         };
@@ -43,18 +61,23 @@
         socket.onerror = function(error) {
             console.log(`[error] ${error.message}`);
         };
-        
+
         const c = document.getElementById('ctx');
         c.width = window.innerWidth;
         c.height = window.innerHeight;
         const CTX = c.getContext('2d');
+
+        document.addEventListener('mousemove', (e)=> {
+          let msg = JSON.stringify({data: [e.pageX, e.pageY, e.pageX, e.pageY, TKN, false]});
+          socket.send(msg);
+        });
 
         document.addEventListener('mousedown', (e_down) => {
             let x = e_down.pageX;
             let y = e_down.pageY;
             const moveListener = (e_move) => {
                 draw(x, y, e_move.pageX, e_move.pageY);
-                let msg = JSON.stringify({data: [x, y, e_move.pageX, e_move.pageY, TKN]});
+                let msg = JSON.stringify({data: [x, y, e_move.pageX, e_move.pageY, TKN, true]});
                 socket.send(msg);
                 x = e_move.pageX;
                 y = e_move.pageY;

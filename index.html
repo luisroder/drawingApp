@@ -12,6 +12,38 @@
     </canvas>
 
     <script>
+        let socket = new WebSocket("wss://66ee-79-246-148-139.ngrok.io");
+        const TKN = Math.floor(Math.random() * 1000000);
+
+        socket.onopen = function(e) {
+        console.log("[open] Connection established");
+        console.log("Sending to server");
+        };
+
+        socket.onmessage = function(event) {
+            let obj = JSON.parse(event.data);
+            let arr = obj.data;
+            // console.log(arr);
+            if(arr[4] !== TKN) {
+                draw(arr[0], arr[1], arr[2], arr[3]);
+            }
+            console.log(`[message] Data received from server: ${event.data}`);
+        };
+
+        socket.onclose = function(event) {
+        if (event.wasClean) {
+            console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+        } else {
+            // e.g. server process killed or network down
+            // event.code is usually 1006 in this case
+            console.log('[close] Connection died');
+        }
+        };
+
+        socket.onerror = function(error) {
+            console.log(`[error] ${error.message}`);
+        };
+        
         const c = document.getElementById('ctx');
         c.width = window.innerWidth;
         c.height = window.innerHeight;
@@ -21,10 +53,9 @@
             let x = e_down.pageX;
             let y = e_down.pageY;
             const moveListener = (e_move) => {
-                CTX.beginPath();
-                CTX.moveTo(x, y);
-                CTX.lineTo(e_move.pageX, e_move.pageY);
-                CTX.stroke();
+                draw(x, y, e_move.pageX, e_move.pageY);
+                let msg = JSON.stringify({data: [x, y, e_move.pageX, e_move.pageY, TKN]});
+                socket.send(msg);
                 x = e_move.pageX;
                 y = e_move.pageY;
             };
@@ -33,6 +64,13 @@
                 document.removeEventListener('mousemove', moveListener);
             })
         })
+
+        const draw = (x, y, x_new, y_new) => {
+            CTX.beginPath();
+            CTX.moveTo(x, y);
+            CTX.lineTo(x_new, y_new);
+            CTX.stroke();
+        };
     </script>
 </body>
 </html>

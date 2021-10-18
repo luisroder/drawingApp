@@ -12,13 +12,18 @@
     </canvas>
 
     <script>
-        const cur = document.createElement("img");
-        cur.setAttribute('src', './cursor.png')
+        const cur = document.createElement("div");
+        const curImg = document.createElement("img");
+        curImg.setAttribute('src', './cursor.png')
         cur.style.position = "absolute";
-        cur.height = "30";
-        cur.weight = "30";
+        curImg.height = "30";
+        curImg.width = "30";
         cur.style.top = "0";
-        cur.setAttribute("type", "img/png")
+        curImg.setAttribute("type", "img/png")
+        cur.appendChild(curImg);
+        const curText = document.createElement("span")
+        curText.setAttribute('id', "curText");
+        cur.appendChild(curText);
 
         const body = document.getElementById('body');
 
@@ -38,14 +43,16 @@
             let arr = obj.data;
 
             if(arr[4] !== TKN) {
+              if(arr[4] !== curText.innerHTML){
+                document.getElementById("curText").innerHTML = arr[4];
+              }
                 cur.style.left = arr[0]+"px";
                 cur.style.top = arr[1]+"px";
-                
+
                 if(arr[5] === true) {
                   draw(arr[0], arr[1], arr[2], arr[3]);
                 }
             }
-            console.log(`[message] Data received from server: ${event.data}`);
         };
 
         socket.onclose = function(event) {
